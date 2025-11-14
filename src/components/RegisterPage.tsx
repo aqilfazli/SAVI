@@ -12,11 +12,11 @@ import {
   SelectValue,
 } from './ui/select';
 import { Bot, Leaf, Sprout, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface RegisterPageProps {
   onNavigateToLogin: () => void;
-  onRegisterSuccess: (fullName: string, email: string, role: 'customer' | 'technician' | 'admin') => void;
+  onRegisterSuccess: (fullName: string, email: string, role: 'superadmin' | 'customer' | 'technician' | 'admin') => void;
   onBackToHome: () => void;
 }
 
@@ -26,7 +26,7 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
     email: '',
     password: '',
     confirmPassword: '',
-    role: '' as 'customer' | 'technician' | 'admin' | '',
+  role: '' as 'superadmin' | 'customer' | 'technician' | 'admin' | '',
   });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,7 +106,7 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
     // Simulate API call
     setTimeout(() => {
       toast.success(`Account created successfully! Welcome to SAVI, ${formData.fullName}! 🌱`);
-      onRegisterSuccess(formData.fullName, formData.email, formData.role as 'customer' | 'technician' | 'admin');
+  onRegisterSuccess(formData.fullName, formData.email, formData.role as 'superadmin' | 'customer' | 'technician' | 'admin');
       setIsLoading(false);
     }, 1500);
   };
@@ -255,7 +255,7 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
               <Label htmlFor="role" className="text-gray-700">
                 Role
               </Label>
-              <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
+              <Select value={formData.role} onValueChange={(value: string) => handleInputChange('role', value)}>
                 <SelectTrigger className={`h-12 rounded-xl border-gray-300 focus:border-[#2E7D32] focus:ring-[#2E7D32] ${
                   errors.role ? 'border-red-500' : ''
                 }`}>
@@ -277,7 +277,7 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
                 <Checkbox
                   id="terms"
                   checked={agreedToTerms}
-                  onCheckedChange={(checked) => {
+                  onCheckedChange={(checked: any) => {
                     setAgreedToTerms(checked as boolean);
                     setErrors({ ...errors, terms: undefined });
                   }}

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Search, Filter, Edit, ChevronDown, Home } from 'lucide-react';
 import { Button } from './ui/button';
+import { can } from '../utils/permissions';
+import { UserData } from '../types/user';
 import { Input } from './ui/input';
 import { ThreadCard } from './ThreadCard';
 import { CreatePostDialog } from './CreatePostDialog';
@@ -10,13 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-
-interface UserData {
-  fullName: string;
-  email: string;
-  role: 'customer' | 'technician' | 'admin';
-  joinDate: string;
-}
 
 interface ForumPageProps {
   userData: UserData | null;
@@ -127,7 +122,7 @@ export function ForumPage({ userData, onNavigateToThread, onBackToHome }: ForumP
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [threads, setThreads] = useState<Thread[]>(mockThreads);
 
-  const canCreatePost = userData?.role === 'customer';
+  const canCreatePost = can(userData?.role, 'forum');
 
   const handleVote = (threadId: string, voteType: 'up' | 'down') => {
     setThreads(threads.map(thread => {
@@ -147,8 +142,8 @@ export function ForumPage({ userData, onNavigateToThread, onBackToHome }: ForumP
       id: String(Date.now()),
       author: {
         name: userData?.fullName || 'Anonymous',
-        avatar: userData?.fullName.split(' ').map(n => n[0]).join('') || 'AN',
-        role: userData?.role || 'customer',
+        avatar: userData?.fullName.split(' ').map((n: string) => n[0]).join('') || 'AN',
+        role: (userData?.role as 'customer' | 'technician' | 'admin') || 'customer',
       },
       title: title.toUpperCase(),
       date: new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }),

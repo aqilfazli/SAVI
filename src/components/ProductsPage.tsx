@@ -29,7 +29,9 @@ import {
   Leaf,
   Eye,
 } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
+import { can } from '../utils/permissions';
+import { UserData } from '../types/user';
 
 interface Product {
   id: string;
@@ -49,7 +51,11 @@ interface CartItem {
   quantity: number;
 }
 
-export function ProductsPage() {
+interface ProductsPageProps {
+  userData?: UserData | null;
+}
+
+export function ProductsPage({ userData }: ProductsPageProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);

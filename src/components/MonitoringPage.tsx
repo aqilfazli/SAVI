@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
+import { can } from '../utils/permissions';
+import { UserData } from '../types/user';
 import {
   Thermometer,
   Droplets,
@@ -32,7 +34,7 @@ interface SensorData {
   location: string;
 }
 
-export function MonitoringPage() {
+export function MonitoringPage({ userData }: { userData?: UserData | null }) {
   const [sensorData, setSensorData] = useState<SensorData[]>([
     {
       id: '1',

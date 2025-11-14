@@ -8,16 +8,11 @@ import { Textarea } from './ui/textarea';
 import { Separator } from './ui/separator';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { ReportDialog } from './ReportDialog';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
-interface UserData {
-  fullName: string;
-  email: string;
-  role: 'customer' | 'technician' | 'admin';
-  joinDate: string;
-}
+import { UserData } from '../types/user';
 
-interface ThreadDetailPageProps {
+interface ThreadDetailProps {
   threadId: string;
   userData: UserData | null;
   onBack: () => void;
@@ -28,7 +23,7 @@ interface Comment {
   author: {
     name: string;
     avatar: string;
-    role: 'customer' | 'technician' | 'admin';
+    role: 'customer' | 'technician' | 'admin' | 'superadmin';
   };
   content: string;
   date: string;
@@ -36,7 +31,7 @@ interface Comment {
   isTechnicianReply?: boolean;
   hasMedia?: boolean;
   mediaUrl?: string;
-  mediaType?: 'image' | 'video';
+  mediaType?: 'image' | 'video' | null;
 }
 
 const mockThread = {
@@ -84,7 +79,7 @@ const mockComments: Comment[] = [
   },
 ];
 
-export function ThreadDetailPage({ threadId, userData, onBack }: ThreadDetailPageProps) {
+export function ThreadDetailPage({ threadId, userData, onBack }: ThreadDetailProps) {
   const [hasUpvoted, setHasUpvoted] = useState(false);
   const [hasDownvoted, setHasDownvoted] = useState(false);
   const [upvotes, setUpvotes] = useState(mockThread.upvotes);
@@ -161,7 +156,7 @@ export function ThreadDetailPage({ threadId, userData, onBack }: ThreadDetailPag
       id: String(Date.now()),
       author: {
         name: userData.fullName,
-        avatar: userData.fullName.split(' ').map(n => n[0]).join(''),
+        avatar: userData.fullName.split(' ').map((n: string) => n[0]).join(''),
         role: userData.role,
       },
       content: newComment,
@@ -262,13 +257,13 @@ export function ThreadDetailPage({ threadId, userData, onBack }: ThreadDetailPag
                 <div className="w-full aspect-video bg-gray-200 flex items-center justify-center">
                   <Video className="h-16 w-16 text-gray-400" />
                 </div>
-              ) : (
+              ) : mockThread.mediaType === 'image' ? (
                 <ImageWithFallback
                   src={mockThread.mediaUrl}
                   alt="Thread media"
                   className="w-full max-h-96 object-cover"
                 />
-              )}
+              ) : null}
             </div>
           )}
 

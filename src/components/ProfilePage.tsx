@@ -37,14 +37,9 @@ import {
   EyeOff,
   MessageCircle,
 } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
-interface UserData {
-  fullName: string;
-  email: string;
-  role: 'customer' | 'technician' | 'admin';
-  joinDate: string;
-}
+import { UserData } from '../types/user';
 
 interface ProfilePageProps {
   userData: UserData | null;
@@ -488,7 +483,7 @@ export function ProfilePage({ userData, onBack, onLogout }: ProfilePageProps) {
                     </div>
                     <Switch
                       checked={notificationsEnabled}
-                      onCheckedChange={(checked) => {
+                      onCheckedChange={(checked: any) => {
                         setNotificationsEnabled(checked);
                         toast.success(checked ? 'Notifications enabled 🔔' : 'Notifications disabled 🔕');
                       }}

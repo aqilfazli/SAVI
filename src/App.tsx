@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
+import AdminDashboard from './components/AdminDashboard';
+import SystemConfig from './components/SystemConfig';
+import LogsPage from './components/LogsPage';
+import BackupRestore from './components/BackupRestore';
 import { HeroSection } from './components/HeroSection';
 import { KeyFeatures } from './components/KeyFeatures';
 import { Footer } from './components/Footer';
@@ -12,14 +16,21 @@ import { ForumPage } from './components/ForumPage';
 import { ThreadDetailPage } from './components/ThreadDetailPage';
 import { Toaster } from './components/ui/sonner';
 
-type Page = 'home' | 'monitoring' | 'products' | 'forum' | 'thread-detail' | 'login' | 'register' | 'profile';
+import { UserData } from './types/user';
 
-interface UserData {
-  fullName: string;
-  email: string;
-  role: 'customer' | 'technician' | 'admin';
-  joinDate: string;
-}
+type Page =
+  | 'home'
+  | 'monitoring'
+  | 'products'
+  | 'forum'
+  | 'thread-detail'
+  | 'login'
+  | 'register'
+  | 'profile'
+  | 'admin-dashboard'
+  | 'system-config'
+  | 'logs'
+  | 'backup-restore';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -61,7 +72,7 @@ export default function App() {
     setCurrentPage('home');
   };
 
-  const handleRegisterSuccess = (fullName: string, email: string, role: 'customer' | 'technician' | 'admin') => {
+  const handleRegisterSuccess = (fullName: string, email: string, role: 'superadmin' | 'customer' | 'technician' | 'admin') => {
     const user: UserData = {
       fullName,
       email,
@@ -187,9 +198,21 @@ export default function App() {
           </>
         )}
         
-        {currentPage === 'monitoring' && <MonitoringPage />}
+        {currentPage === 'monitoring' && <MonitoringPage userData={userData} />}
         
-        {currentPage === 'products' && <ProductsPage />}
+        {currentPage === 'products' && <ProductsPage userData={userData} />}
+        {currentPage === 'admin-dashboard' && (
+          <AdminDashboard userData={userData} onBack={() => setCurrentPage('home')} />
+        )}
+        {currentPage === 'system-config' && (
+          <SystemConfig userData={userData} onBack={() => setCurrentPage('home')} />
+        )}
+        {currentPage === 'logs' && (
+          <LogsPage userData={userData} onBack={() => setCurrentPage('home')} />
+        )}
+        {currentPage === 'backup-restore' && (
+          <BackupRestore userData={userData} onBack={() => setCurrentPage('home')} />
+        )}
       </main>
       
       <Footer />

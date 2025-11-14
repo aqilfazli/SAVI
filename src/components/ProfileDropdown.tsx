@@ -21,13 +21,9 @@ import {
   Wrench,
   BarChart,
 } from 'lucide-react';
+import { can } from '../utils/permissions';
 
-interface UserData {
-  fullName: string;
-  email: string;
-  role: 'customer' | 'technician' | 'admin';
-  joinDate: string;
-}
+import { UserData } from '../types/user';
 
 interface ProfileDropdownProps {
   children: React.ReactNode;
@@ -195,6 +191,36 @@ export function ProfileDropdown({
             <Settings className="h-4 w-4 mr-2" />
             Account Settings
           </Button>
+
+          {can(userData.role, 'manage_products') && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-10 text-gray-700 hover:text-[#2E7D32] hover:bg-[#E8F5E9] rounded-xl"
+            >
+              <Package className="h-4 w-4 mr-2" />
+              Kelola Produk
+            </Button>
+          )}
+
+          {can(userData.role, 'manage_system') && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-10 text-gray-700 hover:text-[#2E7D32] hover:bg-[#E8F5E9] rounded-xl"
+            >
+              <Wrench className="h-4 w-4 mr-2" />
+              Konfigurasi Sistem
+            </Button>
+          )}
+
+          {can(userData.role, 'manage_admins') && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-10 text-gray-700 hover:text-[#2E7D32] hover:bg-[#E8F5E9] rounded-xl"
+            >
+              <BarChart className="h-4 w-4 mr-2" />
+              Kelola Admin
+            </Button>
+          )}
 
           <Button
             variant="ghost"

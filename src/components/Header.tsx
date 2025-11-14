@@ -2,13 +2,7 @@ import { useState, useEffect } from 'react';
 import { User, Menu, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-
-interface UserData {
-  fullName: string;
-  email: string;
-  role: 'customer' | 'technician' | 'admin';
-  joinDate: string;
-}
+import { UserData } from '../types/user';
 
 interface HeaderProps {
   onLoginClick?: () => void;
