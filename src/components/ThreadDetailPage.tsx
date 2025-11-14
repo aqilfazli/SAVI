@@ -50,7 +50,7 @@ const mockThread = {
   views: 13000,
   hasMedia: true,
   mediaUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
-  mediaType: 'image' as const,
+  mediaType: 'image' as 'image' | 'video',
 };
 
 const mockComments: Comment[] = [
