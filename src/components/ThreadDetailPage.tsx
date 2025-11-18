@@ -5,7 +5,6 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { Card } from './ui/card';
 import { Textarea } from './ui/textarea';
-import { Separator } from './ui/separator';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { ReportDialog } from './ReportDialog';
 import { toast } from 'sonner';

@@ -565,7 +565,7 @@ export function ProfilePage({ userData, onBack, onLogout }: ProfilePageProps) {
               Edit Profile
             </DialogTitle>
             <DialogDescription>
-              Update your profile information here. Click save when you're done.
+              Update your profile information here. Click save when you&apos;re done.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEditProfileSubmit}>

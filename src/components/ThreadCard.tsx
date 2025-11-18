@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { ArrowBigUp, ArrowBigDown, Eye, MessageCircle, Share2, ImageIcon, Video, Flag } from 'lucide-react';
+import { ArrowBigUp, ArrowBigDown, Eye, MessageCircle, Share2, Video, Flag } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Card } from './ui/card';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { ReportDialog } from './ReportDialog';
-import { toast } from 'sonner@2.0.3';
+import { toast } from "sonner";
 import type { Thread } from './ForumPage';
 
 interface ThreadCardProps {

@@ -5,7 +5,7 @@ import { Label } from './ui/label';
 import { Checkbox } from './ui/checkbox';
 import { Card } from './ui/card';
 import { Bot, Leaf, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from "sonner";
 
 interface LoginPageProps {
   onNavigateToRegister: () => void;
@@ -220,7 +220,7 @@ export function LoginPage({ onNavigateToRegister, onLoginSuccess, onBackToHome }
 
           {/* Register Link */}
           <p className="text-center text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <button
               onClick={onNavigateToRegister}
               className="text-[#2E7D32] hover:text-[#1B5E20] transition-colors"

@@ -1,10 +1,17 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Header } from './components/Header';
 import AdminDashboard from './components/AdminDashboard';
 import SystemConfig from './components/SystemConfig';
 import LogsPage from './components/LogsPage';
 import BackupRestore from './components/BackupRestore';
-import { RoleSwitcher } from './components/RoleSwitcher';
+// Dev-only: lazy-load RoleSwitcher so it is not bundled in production
+let DevRoleSwitcher: React.ComponentType<any> | null = null;
+if (import.meta.env.DEV) {
+  // React.lazy dynamic import — only evaluated in dev
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore dynamic import type
+  DevRoleSwitcher = React.lazy(() => import('./components/RoleSwitcher'));
+}
 import { HeroSection } from './components/HeroSection';
 import { KeyFeatures } from './components/KeyFeatures';
 import { Footer } from './components/Footer';
@@ -39,7 +46,6 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [currentThreadId, setCurrentThreadId] = useState<string>('');
-  const [devRole, setDevRole] = useState<Role>('customer');
 
   // Check if user is logged in on mount
   useEffect(() => {
@@ -112,7 +118,6 @@ export default function App() {
   };
 
   const handleRoleChange = (role: Role) => {
-    setDevRole(role);
     if (userData) {
       const updatedUser: UserData = { ...userData, role };
       setUserData(updatedUser);
@@ -210,9 +215,9 @@ export default function App() {
           </>
         )}
         
-        {currentPage === 'monitoring' && <MonitoringPage userData={userData} />}
+        {currentPage === 'monitoring' && <MonitoringPage />}
         
-        {currentPage === 'products' && <ProductsPage userData={userData} />}
+        {currentPage === 'products' && <ProductsPage />}
         {currentPage === 'admin-dashboard' && (
           <AdminDashboard userData={userData} onBack={() => setCurrentPage('home')} />
         )}
@@ -229,7 +234,11 @@ export default function App() {
       
       <Footer />
       <Toaster />
-      {isLoggedIn && <RoleSwitcher currentRole={userData?.role || 'customer'} onRoleChange={handleRoleChange} />}
+      {isLoggedIn && import.meta.env.DEV && DevRoleSwitcher && (
+        <Suspense fallback={null}>
+          <DevRoleSwitcher currentRole={userData?.role || 'customer'} onRoleChange={handleRoleChange} />
+        </Suspense>
+      )}
     </div>
   );
 }

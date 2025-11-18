@@ -15,6 +15,9 @@ interface RoleSwitcherProps {
 }
 
 export function RoleSwitcher({ currentRole, onRoleChange }: RoleSwitcherProps) {
+  // Jangan tampilkan RoleSwitcher di produksi — hanya untuk development/testing
+  // import.meta.env.PROD disediakan oleh Vite (true di build produksi)
+  if (import.meta.env.PROD) return null;
   const roles: { value: Role; label: string; color: string }[] = [
     { value: 'superadmin', label: 'Super Admin', color: 'bg-red-100 text-red-700' },
     { value: 'admin', label: 'Admin', color: 'bg-purple-100 text-purple-700' },

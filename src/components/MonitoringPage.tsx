@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
-import { can } from '../utils/permissions';
-import { UserData } from '../types/user';
 import {
   Thermometer,
   Droplets,
@@ -34,7 +32,7 @@ interface SensorData {
   location: string;
 }
 
-export function MonitoringPage({ userData }: { userData?: UserData | null }) {
+export function MonitoringPage(): JSX.Element {
   const [sensorData, setSensorData] = useState<SensorData[]>([
     {
       id: '1',
@@ -126,7 +124,7 @@ export function MonitoringPage({ userData }: { userData?: UserData | null }) {
     },
   ]);
 
-  const [robotStatus, setRobotStatus] = useState([
+  const [robotStatus] = useState([
     {
       id: 'R001',
       name: 'Harvesting Robot #1',

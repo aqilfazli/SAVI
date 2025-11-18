@@ -24,9 +24,15 @@ const reportReasons = [
   { value: 'other', label: 'Lainnya' },
 ];
 
-export function ReportDialog({ open, onOpenChange, contentType, contentId, reportedBy }: ReportDialogProps) {
+export function ReportDialog({ open, onOpenChange, contentType }: ReportDialogProps) {
   const [selectedReason, setSelectedReason] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
+
+  // Placeholder for sending report to backend - implement server-side endpoint
+  const submitReport = () => {
+    // TODO: post to /api/reports
+    return;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,18 +43,9 @@ export function ReportDialog({ open, onOpenChange, contentType, contentId, repor
     }
 
     // Simulate sending report to admin/super admin
-    const report = {
-      contentType,
-      contentId,
-      reason: selectedReason,
-      additionalInfo,
-      reportedBy,
-      timestamp: new Date().toISOString(),
-    };
-
     // In a real app, this would send to backend and notify admins
-    // Report data: { reportType, targetId, reportedBy, timestamp }
-    
+    // Report data would include: { contentType, contentId, reason: selectedReason, additionalInfo, reportedBy, timestamp }
+    submitReport();
     // Simulate admin notification
     toast.success('Laporan berhasil dikirim ke Admin', {
       description: 'Admin akan meninjau konten yang dilaporkan',
