@@ -24,6 +24,7 @@ import {
 import { can } from '../utils/permissions';
 
 import { UserData } from '../types/user';
+import { getInitials, toSafeString } from '../utils/string';
 
 interface ProfileDropdownProps {
   children: React.ReactNode;
@@ -91,15 +92,15 @@ export function ProfileDropdown({
         {/* Header Profile */}
         <div className="p-5 bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] rounded-t-2xl">
           <div className="flex items-center gap-3">
-            <Avatar className="h-14 w-14 ring-4 ring-white/30">
+              <Avatar className="h-14 w-14 ring-4 ring-white/30">
               <AvatarImage src="" />
               <AvatarFallback className="bg-white text-[#2E7D32]">
-                {userData.fullName.split(' ').map(n => n[0]).join('')}
+                {getInitials(userData.fullName || userData.email)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <h3 className="text-white truncate" style={{ fontSize: '16px', fontWeight: 600 }}>
-                {userData.fullName}
+                {toSafeString(userData.fullName) || toSafeString(userData.email)}
               </h3>
               <Badge className={`${getRoleBadgeColor(userData.role)} border mt-1 text-xs`}>
                 {getRoleLabel(userData.role)}

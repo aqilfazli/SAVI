@@ -40,6 +40,7 @@ import {
 import { toast } from 'sonner';
 
 import { UserData } from '../types/user';
+import { getInitials, toSafeString } from '../utils/string';
 
 interface ProfilePageProps {
   userData: UserData | null;
@@ -259,7 +260,7 @@ export function ProfilePage({ userData, onBack, onLogout }: ProfilePageProps) {
             <Avatar className="h-32 w-32 ring-4 ring-[#4CAF50]/30">
               <AvatarImage src={fullUserData.avatar} />
               <AvatarFallback className="bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] text-white" style={{ fontSize: '40px' }}>
-                {fullUserData.fullName.split(' ').map(n => n[0]).join('')}
+                {getInitials(fullUserData.fullName || fullUserData.email)}
               </AvatarFallback>
             </Avatar>
 

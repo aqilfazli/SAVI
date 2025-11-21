@@ -3,6 +3,7 @@ import { Search, Filter, Edit, ChevronDown, Home } from 'lucide-react';
 import { Button } from './ui/button';
 import { can } from '../utils/permissions';
 import { UserData } from '../types/user';
+import { getInitials } from '../utils/string';
 import { Input } from './ui/input';
 import { ThreadCard } from './ThreadCard';
 import { CreatePostDialog } from './CreatePostDialog';
@@ -142,7 +143,7 @@ export function ForumPage({ userData, onNavigateToThread, onBackToHome }: ForumP
       id: String(Date.now()),
       author: {
         name: userData?.fullName || 'Anonymous',
-        avatar: userData?.fullName.split(' ').map((n: string) => n[0]).join('') || 'AN',
+        avatar: getInitials(userData?.fullName || userData?.email) || 'AN',
         role: (userData?.role as 'customer' | 'technician' | 'admin') || 'customer',
       },
       title: title.toUpperCase(),

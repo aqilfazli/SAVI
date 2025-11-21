@@ -3,10 +3,13 @@
   import App from "./App";
   import "./index.css";
   import { AuthProvider } from "./contexts/AuthContext";
+  import ErrorBoundary from "./components/ErrorBoundary";
 
   createRoot(document.getElementById("root")!).render(
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </ErrorBoundary>
   );
   

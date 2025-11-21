@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { toSafeString } from '../utils/string';
 
 export interface AuthContextType {
   currentUser: User | null;
@@ -81,14 +82,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      // Debug log to help diagnose post-login rendering issues
+      // (will appear in browser console)
+      // eslint-disable-next-line no-console
+      console.debug('Auth state changed:', user ? { uid: user.uid, email: user.email } : null);
       
       // Get user data from Firestore
       if (user) {
         try {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
+          // Log the raw Firestore document to help debugging
+          // eslint-disable-next-line no-console
+          console.debug('Firestore userDoc:', userDoc.exists() ? userDoc.data() : null);
           if (userDoc.exists()) {
-            setUserRole(userDoc.data().role || 'customer');
-            setUserDisplayName(userDoc.data().displayName || user.email);
+            const data = userDoc.data();
+            // Guard against non-primitive values coming from Firestore
+            const role = data?.role ? String(data.role) : 'customer';
+            const displayName = data?.displayName ? toSafeString(data.displayName) : toSafeString(user.email);
+            setUserRole(role || 'customer');
+            setUserDisplayName(displayName || toSafeString(user.email));
           }
         } catch (error) {
           console.error('Error fetching user data:', error);

@@ -10,6 +10,7 @@ import { ReportDialog } from './ReportDialog';
 import { toast } from 'sonner';
 
 import { UserData } from '../types/user';
+import { getInitials } from '../utils/string';
 
 interface ThreadDetailProps {
   threadId: string;
@@ -154,8 +155,8 @@ export function ThreadDetailPage({ threadId, userData, onBack }: ThreadDetailPro
     const comment: Comment = {
       id: String(Date.now()),
       author: {
-        name: userData.fullName,
-        avatar: userData.fullName.split(' ').map((n: string) => n[0]).join(''),
+        name: String(userData.fullName || userData.email),
+        avatar: getInitials(userData.fullName || userData.email),
         role: userData.role,
       },
       content: newComment,
@@ -393,7 +394,7 @@ export function ThreadDetailPage({ threadId, userData, onBack }: ThreadDetailPro
             <div className="flex gap-4">
               <Avatar className="h-10 w-10 border-2 border-[#4CAF50]/30 flex-shrink-0">
                 <AvatarFallback className="bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] text-white">
-                  {userData.fullName.split(' ').map(n => n[0]).join('')}
+                  {getInitials(userData.fullName || userData.email)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-3">

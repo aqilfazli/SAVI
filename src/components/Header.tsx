@@ -73,7 +73,7 @@ export function Header({ onLoginClick, onProfileClick, onLogout, onNavigate, cur
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
             {/* Profile Icon */}
-            {isLoggedIn && userData ? (
+              {isLoggedIn && userData ? (
               <button
                 onClick={onProfileClick}
                 className="relative group"
@@ -82,7 +82,19 @@ export function Header({ onLoginClick, onProfileClick, onLogout, onNavigate, cur
                 <Avatar className="h-10 w-10 ring-2 ring-[#4CAF50]/30 hover:ring-[#4CAF50] transition-all cursor-pointer">
                   <AvatarImage src="" />
                   <AvatarFallback className="bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] text-white">
-                    {userData.fullName.split(' ').map(n => n[0]).join('')}
+                    {(() => {
+                      try {
+                        if (userData.fullName && userData.fullName.length > 0) {
+                          return userData.fullName.split(' ').map(n => n[0]).join('');
+                        }
+                        if (userData.email && userData.email.length > 0) {
+                          return userData.email.charAt(0).toUpperCase();
+                        }
+                        return 'U';
+                      } catch (e) {
+                        return 'U';
+                      }
+                    })()}
                   </AvatarFallback>
                 </Avatar>
                 <span className="absolute -bottom-1 -right-1 bg-green-500 rounded-full h-3 w-3 border-2 border-white"></span>
