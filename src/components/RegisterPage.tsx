@@ -11,8 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
-import { Bot, Leaf, Sprout, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Bot, Leaf, Sprout, ArrowRight, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '../contexts/AuthContext';
 
 interface RegisterPageProps {
   onNavigateToLogin: () => void;
@@ -26,7 +27,7 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
     email: '',
     password: '',
     confirmPassword: '',
-  role: '' as 'superadmin' | 'customer' | 'technician' | 'admin' | '',
+  role: 'customer' as 'superadmin' | 'customer' | 'technician' | 'admin' | 'customer',
   });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +41,8 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
     role?: string;
     terms?: string;
   }>({});
+
+  const { signup } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -103,12 +106,17 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await signup(formData.email, formData.password, formData.fullName);
       toast.success(`Account created successfully! Welcome to SAVI, ${formData.fullName}! 🌱`);
-  onRegisterSuccess(formData.fullName, formData.email, formData.role as 'superadmin' | 'customer' | 'technician' | 'admin');
+      onRegisterSuccess(formData.fullName, formData.email, formData.role as 'superadmin' | 'customer' | 'technician' | 'admin');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.';
+      toast.error(errorMessage);
+      console.error('Registration error:', error);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -141,10 +149,7 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] mb-4">
               <Sprout className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-[#1B5E20] mb-2" style={{ fontSize: '32px', fontWeight: 700 }}>
-              SAVI
-            </h1>
-            <p className="text-gray-600 text-sm">Smart Autonomous Vegetable Integrator</p>
+
           </div>
 
           {/* Title */}
@@ -164,7 +169,7 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
               <Input
                 id="fullName"
                 type="text"
-                placeholder="John Doe"
+                placeholder="your full name"
                 value={formData.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
                 className={`h-12 rounded-xl border-gray-300 focus:border-[#2E7D32] focus:ring-[#2E7D32] transition-all ${
@@ -183,7 +188,7 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
               <Input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
+                placeholder="your email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 className={`h-12 rounded-xl border-gray-300 focus:border-[#2E7D32] focus:ring-[#2E7D32] transition-all ${
@@ -311,9 +316,16 @@ export function RegisterPage({ onNavigateToLogin, onRegisterSuccess, onBackToHom
               className="w-full h-12 bg-gradient-to-r from-[#4CAF50] to-[#2E7D32] hover:from-[#45a049] hover:to-[#1B5E20] text-white rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="flex items-center justify-center gap-2">
-                {isLoading ? 'Creating Account...' : 'Create Account'}
-                {!isLoading && (
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Creating Account...
+                  </>
+                ) : (
+                  <>
+                    Create Account
+                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </>
                 )}
               </span>
             </Button>

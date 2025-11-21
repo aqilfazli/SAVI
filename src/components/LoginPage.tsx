@@ -4,8 +4,9 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Checkbox } from './ui/checkbox';
 import { Card } from './ui/card';
-import { Bot, Leaf, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Bot, Leaf, ArrowRight, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from "sonner";
+import { useAuth } from '../contexts/AuthContext';
 
 interface LoginPageProps {
   onNavigateToRegister: () => void;
@@ -20,6 +21,8 @@ export function LoginPage({ onNavigateToRegister, onLoginSuccess, onBackToHome }
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  
+  const { login } = useAuth();
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -51,22 +54,17 @@ export function LoginPage({ onNavigateToRegister, onLoginSuccess, onBackToHome }
     }
 
     setIsLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      // In a real app, you would validate credentials against a backend
-      // For demo purposes, we'll accept any valid email/password format
-      
-      if (rememberMe) {
-        localStorage.setItem('saviRememberMe', email);
-      } else {
-        localStorage.removeItem('saviRememberMe');
-      }
-
-      toast.success('Login successful! Welcome back to SAVI 🌱');
+    try {
+      await login(email, password);
+      toast.success('Login successful! Welcome back.');
       onLoginSuccess(email);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please try again.';
+      toast.error(errorMessage);
+      console.error('Login error:', error);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -122,7 +120,7 @@ export function LoginPage({ onNavigateToRegister, onLoginSuccess, onBackToHome }
               <Input
                 id="email"
                 type="text"
-                placeholder="your@email.com"
+                placeholder="your email"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -200,9 +198,16 @@ export function LoginPage({ onNavigateToRegister, onLoginSuccess, onBackToHome }
               className="w-full h-12 bg-gradient-to-r from-[#4CAF50] to-[#2E7D32] hover:from-[#45a049] hover:to-[#1B5E20] text-white rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="flex items-center justify-center gap-2">
-                {isLoading ? 'Logging in...' : 'Login'}
-                {!isLoading && (
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  <>
+                    Login
+                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </>
                 )}
               </span>
             </Button>
