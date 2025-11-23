@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
+import { toast } from "sonner";
+import { auth } from './firebase';
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
 import { KeyFeatures } from './components/KeyFeatures';
@@ -30,61 +33,92 @@ export default function App() {
 
   // Check if user is logged in on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem('saviUser');
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        setUserData(user);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        const creationTime = user.metadata.creationTime ? new Date(user.metadata.creationTime) : new Date();
+        const formattedJoinDate = creationTime.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
+        const currentUserData: UserData = {
+          fullName: user.displayName || 'User',
+          email: user.email || '',
+          // NOTE: 'role' is not a standard Firebase auth property.
+          // You might need to store this in a database (like Firestore)
+          // and retrieve it after login. For now, it's defaulted.
+          role: 'customer',
+          joinDate: formattedJoinDate,
+        };
+        setUserData(currentUserData);
         setIsLoggedIn(true);
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('saviUser');
+      } else {
+        // User is signed out
+        setUserData(null);
+        setIsLoggedIn(false);
       }
-    }
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
-  const handleLoginSuccess = (email: string) => {
-    // Simulate getting user data from API
-    const user: UserData = {
-      fullName: 'John Anderson',
-      email: email,
-      role: 'customer',
-      joinDate: new Date().toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
-    };
-
-    setUserData(user);
-    setIsLoggedIn(true);
-    localStorage.setItem('saviUser', JSON.stringify(user));
-    setCurrentPage('home');
+  const handleLoginSuccess = async (email: string, password: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      setCurrentPage('home');
+    } catch (error) {
+      console.error("Error signing in: ", error);      
+      if (error instanceof Error) {
+        switch ((error as any).code) {
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            toast.error('Email atau password salah.');
+            break;
+          default:
+            toast.error('Gagal untuk login. Silakan coba lagi.');
+        }
+      }
+      throw error; // Re-throw to be caught in LoginPage
+    }
   };
 
-  const handleRegisterSuccess = (fullName: string, email: string, role: 'customer' | 'technician' | 'admin') => {
-    const user: UserData = {
-      fullName,
-      email,
-      role,
-      joinDate: new Date().toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
-    };
-
-    setUserData(user);
-    setIsLoggedIn(true);
-    localStorage.setItem('saviUser', JSON.stringify(user));
-    setCurrentPage('home');
+  const handleRegisterSuccess = async (fullName: string, email: string, password: string) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Update the user's profile with the full name
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, { displayName: fullName });
+      }
+      setCurrentPage('home');
+    } catch (error) {
+      console.error("Error signing up: ", error);      
+      if (error instanceof Error) {
+        switch ((error as any).code) {
+          case 'auth/email-already-in-use':
+            toast.error('Email ini sudah terdaftar.');
+            break;
+          case 'auth/weak-password':
+            toast.error('Password terlalu lemah. Gunakan minimal 6 karakter.');
+            break;
+          case 'auth/invalid-email':
+            toast.error('Format email tidak valid.');
+            break;
+          default:
+            toast.error('Gagal untuk mendaftar. Silakan coba lagi.');
+        }
+      }
+      throw error; // Re-throw to be caught in RegisterPage
+    }
   };
 
   const handleLogout = () => {
-    setUserData(null);
-    setIsLoggedIn(false);
-    localStorage.removeItem('saviUser');
-    setCurrentPage('home');
+    signOut(auth).then(() => {
+      setCurrentPage('home');
+    });
   };
 
   const handleNavigate = (page: string) => {
