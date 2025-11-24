@@ -1,7 +1,4 @@
 import { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { toast } from "sonner";
-import { auth } from './firebase';
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
 import { KeyFeatures } from './components/KeyFeatures';
@@ -13,10 +10,18 @@ import { MonitoringPage } from './components/MonitoringPage';
 import { ProductsPage } from './components/ProductsPage';
 import { ForumPage } from './components/ForumPage';
 import { ThreadDetailPage } from './components/ThreadDetailPage';
+import { NotificationPage } from './components/NotificationPage';
 import { WhatsAppFloat } from './components/WhatsAppFloat';
 import { Toaster } from './components/ui/sonner';
+import { 
+  getInitialNotificationsByRole, 
+  loadNotificationsFromStorage, 
+  saveNotificationsToStorage,
+  type Notification 
+} from './utils/notificationHelpers';
+import { toast } from 'sonner@2.0.3';
 
-type Page = 'home' | 'monitoring' | 'products' | 'forum' | 'thread-detail' | 'login' | 'register' | 'profile';
+type Page = 'home' | 'monitoring' | 'products' | 'forum' | 'thread-detail' | 'login' | 'register' | 'profile' | 'notifications';
 
 interface UserData {
   fullName: string;
@@ -30,95 +35,135 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [currentThreadId, setCurrentThreadId] = useState<string>('');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Check if user is logged in on mount
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in
-        const creationTime = user.metadata.creationTime ? new Date(user.metadata.creationTime) : new Date();
-        const formattedJoinDate = creationTime.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        });
-
-        const currentUserData: UserData = {
-          fullName: user.displayName || 'User',
-          email: user.email || '',
-          // NOTE: 'role' is not a standard Firebase auth property.
-          // You might need to store this in a database (like Firestore)
-          // and retrieve it after login. For now, it's defaulted.
-          role: 'customer',
-          joinDate: formattedJoinDate,
-        };
-        setUserData(currentUserData);
+    const storedUser = localStorage.getItem('saviUser');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setUserData(user);
         setIsLoggedIn(true);
-      } else {
-        // User is signed out
-        setUserData(null);
-        setIsLoggedIn(false);
+        // Load notifications from storage
+        const storedNotifications = loadNotificationsFromStorage(user.email);
+        if (storedNotifications) {
+          setNotifications(storedNotifications);
+        } else {
+          // If no stored notifications, generate initial ones
+          const initialNotifications = getInitialNotificationsByRole(user.role);
+          setNotifications(initialNotifications);
+          saveNotificationsToStorage(user.email, initialNotifications);
+        }
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        localStorage.removeItem('saviUser');
       }
-    });
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
+    }
   }, []);
 
-  const handleLoginSuccess = async (email: string, password: string) => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      setCurrentPage('home');
-    } catch (error) {
-      console.error("Error signing in: ", error);      
-      if (error instanceof Error) {
-        switch ((error as any).code) {
-          case 'auth/user-not-found':
-          case 'auth/wrong-password':
-          case 'auth/invalid-credential':
-            toast.error('Email atau password salah.');
-            break;
-          default:
-            toast.error('Gagal untuk login. Silakan coba lagi.');
-        }
-      }
-      throw error; // Re-throw to be caught in LoginPage
+  // Save notifications to localStorage whenever they change
+  useEffect(() => {
+    if (userData && notifications.length > 0) {
+      saveNotificationsToStorage(userData.email, notifications);
     }
+  }, [notifications, userData]);
+
+  const handleLoginSuccess = (email: string) => {
+    // Simulate getting user data from API
+    const user: UserData = {
+      fullName: 'John Anderson',
+      email: email,
+      role: 'customer',
+      joinDate: new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
+    };
+
+    setUserData(user);
+    setIsLoggedIn(true);
+    localStorage.setItem('saviUser', JSON.stringify(user));
+    setCurrentPage('home');
+    const initialNotifications = getInitialNotificationsByRole(user.role);
+    setNotifications(initialNotifications);
+    saveNotificationsToStorage(user.email, initialNotifications);
   };
 
-  const handleRegisterSuccess = async (fullName: string, email: string, password: string) => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // Update the user's profile with the full name
-      if (userCredential.user) {
-        await updateProfile(userCredential.user, { displayName: fullName });
-      }
-      setCurrentPage('home');
-    } catch (error) {
-      console.error("Error signing up: ", error);      
-      if (error instanceof Error) {
-        switch ((error as any).code) {
-          case 'auth/email-already-in-use':
-            toast.error('Email ini sudah terdaftar.');
-            break;
-          case 'auth/weak-password':
-            toast.error('Password terlalu lemah. Gunakan minimal 6 karakter.');
-            break;
-          case 'auth/invalid-email':
-            toast.error('Format email tidak valid.');
-            break;
-          default:
-            toast.error('Gagal untuk mendaftar. Silakan coba lagi.');
-        }
-      }
-      throw error; // Re-throw to be caught in RegisterPage
-    }
+  const handleRegisterSuccess = (fullName: string, email: string, role: 'customer' | 'technician' | 'admin') => {
+    const user: UserData = {
+      fullName,
+      email,
+      role,
+      joinDate: new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
+    };
+
+    setUserData(user);
+    setIsLoggedIn(true);
+    localStorage.setItem('saviUser', JSON.stringify(user));
+    setCurrentPage('home');
+    const initialNotifications = getInitialNotificationsByRole(user.role);
+    setNotifications(initialNotifications);
+    saveNotificationsToStorage(user.email, initialNotifications);
   };
 
   const handleLogout = () => {
-    signOut(auth).then(() => {
-      setCurrentPage('home');
-    });
+    setUserData(null);
+    setIsLoggedIn(false);
+    localStorage.removeItem('saviUser');
+    setCurrentPage('home');
+    setNotifications([]);
+  };
+
+  // Notification handlers
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(notifications.map(n => 
+      n.id === id ? { ...n, isRead: true } : n
+    ));
+  };
+
+  const handleMarkAllAsRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    toast.success('Semua notifikasi ditandai sudah dibaca');
+  };
+
+  const handleDeleteNotification = (id: string) => {
+    setNotifications(notifications.filter(n => n.id !== id));
+  };
+
+  const handleApproveRegistration = (notification: Notification) => {
+    if (!notification.actionData) return;
+
+    // Simulate sending email
+    toast.success(
+      `Email persetujuan dikirim ke ${notification.actionData.userName}`,
+      {
+        description: `${notification.actionData.userEmail} sekarang terdaftar sebagai teknisi`,
+      }
+    );
+
+    // Remove notification after action
+    setNotifications(notifications.filter(n => n.id !== notification.id));
+  };
+
+  const handleRejectRegistration = (notification: Notification) => {
+    if (!notification.actionData) return;
+
+    // Simulate sending email
+    toast.error(
+      `Email penolakan dikirim ke ${notification.actionData.userName}`,
+      {
+        description: 'Registrasi teknisi ditolak',
+      }
+    );
+
+    // Remove notification after action
+    setNotifications(notifications.filter(n => n.id !== notification.id));
   };
 
   const handleNavigate = (page: string) => {
@@ -208,6 +253,25 @@ export default function App() {
     );
   }
 
+  if (currentPage === 'notifications') {
+    return (
+      <>
+        <NotificationPage
+          userData={userData}
+          notifications={notifications}
+          onBack={() => setCurrentPage('home')}
+          onMarkAsRead={handleMarkAsRead}
+          onMarkAllAsRead={handleMarkAllAsRead}
+          onDeleteNotification={handleDeleteNotification}
+          onApproveRegistration={handleApproveRegistration}
+          onRejectRegistration={handleRejectRegistration}
+        />
+        <WhatsAppFloat />
+        <Toaster />
+      </>
+    );
+  }
+
   // Main Layout with Header and Footer
   return (
     <div className="min-h-screen bg-white">
@@ -219,6 +283,12 @@ export default function App() {
         currentPage={currentPage}
         isLoggedIn={isLoggedIn}
         userData={userData}
+        notifications={notifications}
+        onMarkAsRead={handleMarkAsRead}
+        onMarkAllAsRead={handleMarkAllAsRead}
+        onApproveRegistration={handleApproveRegistration}
+        onRejectRegistration={handleRejectRegistration}
+        onNotificationClick={() => setCurrentPage('notifications')}
       />
       
       <main>

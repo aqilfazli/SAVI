@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { User, Menu, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { NotificationDropdown } from './NotificationDropdown';
+import { type Notification } from '../utils/notificationHelpers';
 
 interface UserData {
   fullName: string;
@@ -18,9 +20,29 @@ interface HeaderProps {
   currentPage?: string;
   isLoggedIn?: boolean;
   userData?: UserData | null;
+  notifications?: Notification[];
+  onMarkAsRead?: (id: string) => void;
+  onMarkAllAsRead?: () => void;
+  onApproveRegistration?: (notification: Notification) => void;
+  onRejectRegistration?: (notification: Notification) => void;
+  onNotificationClick?: () => void;
 }
 
-export function Header({ onLoginClick, onProfileClick, onLogout, onNavigate, currentPage = 'home', isLoggedIn = false, userData }: HeaderProps) {
+export function Header({ 
+  onLoginClick, 
+  onProfileClick, 
+  onLogout, 
+  onNavigate, 
+  currentPage = 'home', 
+  isLoggedIn = false, 
+  userData,
+  notifications = [],
+  onMarkAsRead,
+  onMarkAllAsRead,
+  onApproveRegistration,
+  onRejectRegistration,
+  onNotificationClick,
+}: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -78,6 +100,19 @@ export function Header({ onLoginClick, onProfileClick, onLogout, onNavigate, cur
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
+            {/* Notification Bell - Only show when logged in */}
+            {isLoggedIn && userData && (
+              <NotificationDropdown 
+                userData={userData}
+                notifications={notifications}
+                onMarkAsRead={onMarkAsRead}
+                onMarkAllAsRead={onMarkAllAsRead}
+                onApproveRegistration={onApproveRegistration}
+                onRejectRegistration={onRejectRegistration}
+                onViewAll={onNotificationClick}
+              />
+            )}
+
             {/* Profile Icon */}
             {isLoggedIn && userData ? (
               <button
